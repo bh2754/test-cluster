@@ -45,7 +45,7 @@ spec:
               SONARR__PORT: &port 8989
               SONARR__AUTHENTICATION_METHOD: External
               SONARR__AUTHENTICATION_REQUIRED: DisabledForLocalAddresses
-              SONARR__APPLICATION_URL: "https://sonarr.bjw-s.dev"
+              SONARR__APPLICATION_URL: "https://sonarr.${SECRET_DOMAIN}"
               SONARR__LOG_LEVEL: info
             envFrom:
               - secretRef:
@@ -69,7 +69,7 @@ spec:
         enabled: true
         className: "internal-nginx"
         hosts:
-          - host: &host "sonarr.bjw-s.dev"
+          - host: &host "sonarr.${SECRET_DOMAIN}"
             paths:
               - path: /
                 service:
