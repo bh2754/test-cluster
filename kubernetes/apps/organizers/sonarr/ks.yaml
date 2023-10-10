@@ -2,7 +2,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: cluster-apps-sonarr-dev
+  name: cluster-apps-sonarr
   namespace: flux-system
   labels:
     substitution.flux.home.arpa/enabled: "true"
@@ -11,7 +11,7 @@ spec:
     - name: cluster-apps-onepassword-connect
     - name: cluster-apps-pod-gateway
     - name: cluster-rook-ceph-cluster
-  path: ./kubernetes/apps/organizers/sonarr-dev/app
+  path: ./kubernetes/apps/organizers/sonarr/app
   prune: true
   sourceRef:
     kind: GitRepository
