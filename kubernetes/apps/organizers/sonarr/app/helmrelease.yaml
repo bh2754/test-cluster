@@ -26,6 +26,7 @@ spec:
       main:
         annotations:
           reloader.stakater.com/auto: "true"
+          setGateway: "true"
 
         pod:
           securityContext:
