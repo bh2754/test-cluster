@@ -5,10 +5,10 @@ kubernetes:
       hosts:
         master1:
           ansible_user: brent
-          ansible_host: 10.0.111.101
+          ansible_host: 10.0.112.11
         master2:
           ansible_user: brent
-          ansible_host: 10.0.111.102
+          ansible_host: 10.0.112.12
         master3:
           ansible_user: brent
-          ansible_host: 10.0.111.103
+          ansible_host: 10.0.112.13
