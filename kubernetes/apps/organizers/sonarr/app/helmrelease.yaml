@@ -1,0 +1,97 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: &app sonarr
+  namespace: organizers
+spec:
+  interval: 15m
+  chart:
+    spec:
+      chart: app-template
+      version: 2.0.3
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+  install:
+    createNamespace: true
+    remediation:
+      retries: 5
+  upgrade:
+    remediation:
+      retries: 5
+  values:
+    controllers:
+      main:
+        annotations:
+          reloader.stakater.com/auto: "true"
+
+        pod:
+          securityContext:
+            runAsUser: 568
+            runAsGroup: 568
+            fsGroup: 568
+            fsGroupChangePolicy: "OnRootMismatch"
+
+        containers:
+          main:
+            image:
+              repository: ghcr.io/onedr0p/sonarr-develop
+              tag: 4.0.0.688@sha256:cc88687162269b73c0e9bd6f147d4f7957639a4bdae3741cffe4bcabd7978e1f
+            env:
+              SONARR__INSTANCE_NAME: Sonarr
+              SONARR__PORT: &port 8989
+              SONARR__AUTHENTICATION_METHOD: External
+              SONARR__AUTHENTICATION_REQUIRED: DisabledForLocalAddresses
+              SONARR__APPLICATION_URL: "https://sonarr.bjw-s.dev"
+              SONARR__LOG_LEVEL: info
+            envFrom:
+              - secretRef:
+                  name: sonarr-secret
+
+            resources:
+              requests:
+                cpu: 20m
+                memory: 323M
+              limits:
+                memory: 323M
+
+    service:
+      main:
+        ports:
+          http:
+            port: *port
+
+    ingress:
+      main:
+        enabled: true
+        className: "internal-nginx"
+        hosts:
+          - host: &host "sonarr.bjw-s.dev"
+            paths:
+              - path: /
+                service:
+                  name: main
+                  port: http
+        tls:
+          - hosts:
+              - *host
+
+    persistence:
+      config:
+        enabled: true
+        existingClaim: sonarr-config-v1
+      media:
+        enabled: true
+        type: nfs
+        server: "${NFS_SERVER}"
+        path: "${NFS_MEDIA}"
+        mountPath: /media
+      download:
+        enabled: true
+        type: nfs
+        server: "${NFS_SERVER}"
+        path: "${NFS_DOWNLOAD}"
+        mountPath: /download
+
