@@ -67,7 +67,7 @@ spec:
             value: 1.1.1.1
         envFrom:
           - secretRef:
-              name: nord-secret
+              name: mullvad-secret
         securityContext:
           capabilities:
             add: ["NET_ADMIN"]
@@ -101,7 +101,7 @@ spec:
       VXLAN_IP_NETWORK: "172.16.1"
       VPN_BLOCK_OTHER_TRAFFIC: "true"
       VPN_TRAFFIC_PORT: "51820"
-      DNS_LOCAL_CIDRS: "local bharris.xya bharris.co"
+      DNS_LOCAL_CIDRS: "local bharris.xyz bharris.co"
       NOT_ROUTED_TO_GATEWAY_CIDRS: "10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
       VPN_LOCAL_CIDRS: "10.0.0.0/8 192.168.0.0/16"
       IPTABLES_NFT: "yes"
