@@ -28,6 +28,8 @@ spec:
           reloader.stakater.com/auto: "true"
           setGateway: "true"
 
+        label:
+          setGateway: "true"
         pod:
           securityContext:
             runAsUser: 568
