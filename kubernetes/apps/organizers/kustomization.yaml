@@ -4,4 +4,4 @@ kind: Kustomization
 resources:
   # Flux-Kustomizations
   - ./sonarr/ks.yaml
-  - ./radarr/ks.yaml
+# - ./radarr/ks.yaml
