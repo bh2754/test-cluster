@@ -29,6 +29,8 @@ spec:
           reloader.stakater.com/auto: "true"
 
         pod:
+          annotations:
+            setGateway: "true"
           securityContext:
             runAsUser: 568
             runAsGroup: 100   # was 568 before app template upgrade
