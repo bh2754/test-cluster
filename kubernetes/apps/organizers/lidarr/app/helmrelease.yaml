@@ -5,15 +5,17 @@ metadata:
   name: &app lidarr
   namespace: organizers
 spec:
-  interval: 15m
+  interval: 5m
   chart:
     spec:
+      # renovate: registryUrl=https://k8s-at-home.com/charts/
       chart: app-template
-      version: 2.0.3
+      version: 1.5.1
       sourceRef:
         kind: HelmRepository
         name: bjw-s
         namespace: flux-system
+      interval: 1m
   install:
     createNamespace: true
     remediation:
@@ -22,68 +24,29 @@ spec:
     remediation:
       retries: 5
   values:
-    controllers:
-      main:
-        type: deployment
-        annotations:
-          reloader.stakater.com/auto: "true"
-
-        pod:
-          annotations:
-            setGateway: "true"
-          securityContext:
-            runAsUser: 568
-            runAsGroup: 100   # was 568 before app template upgrade
-            fsGroup: 100
-            fsGroupChangePolicy: "OnRootMismatch"
-        containers:
-          main:
-            image:
-              repository: ghcr.io/bh2754/lidarr-nightly
-              tag: 1.5.0.3654@sha256:6ed533b3726452abc2952a0eb9f5a50d2a3f3a6e7c9be736bec034ec7ca2dc52
-            env:
-              LIDARR__INSTANCE_NAME: Lidarr
-              LIDARR__PORT: &port 8686
-              LIDARR__LOG_LEVEL: info
-            envFrom:
-              - secretRef:
-                  name: lidarr-secret
-            resources:
-              requests:
-                cpu: 20m
-                memory: 323M
-              limits:
-                memory: 323M
-          netshoot:
-            image:
-              repository: ghcr.io/nicolaka/netshoot
-              tag: v0.11
-            command: ["/bin/bash"]
-            args: ["-c", "while true; do ping localhost; sleep 60;done"]
+    image:
+      repository: ghcr.io/bh2754/lidarr-nightly
+      tag: 1.5.0.3654@sha256:6ed533b3726452abc2952a0eb9f5a50d2a3f3a6e7c9be736bec034ec7ca2dc52
+      pullPolicy: IfNotPresent
+    env:
+      TZ: ${TZ}
+    envFrom:
+      - secretRef:
+        # name: *app
+          name: lidarr-secret
 
     service:
       main:
         ports:
           http:
-            port: *port
-
-    ingress:
-      main:
-        enabled: true
-        className: "external"
-        annotations:
-          external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
-        hosts:
-          - host: &host "lidarr.${SECRET_DOMAIN}"
-            paths:
-              - path: /
-                service:
-                  name: main
-                  port: http
-        tls:
-          - hosts:
-              - *host
-
+            port: 8686
+    metrics:
+      enabled: false
+    podSecurityContext:
+      runAsUser: 568
+      runAsGroup: 568
+      fsGroup: 568
+      fsGroupChangePolicy: OnRootMismatch
     persistence:
       config:
         enabled: true
@@ -91,13 +54,34 @@ spec:
       media:
         enabled: true
         type: nfs
-        server: "${NFS_SERVER}"
-        path: "${NFS_MUSIC}"
-        mountPath: /media
-      download:
+        server: ${NFS_SERVER}
+        path: ${NFS_MUSIC}
+      downloads:
         enabled: true
         type: nfs
-        server: "${NFS_SERVER}"
-        path: "${NFS_DOWNLOAD}"
-        mountPath: /download
-
+        server: ${NFS_SERVER}
+        path: /volume1/Download
+    ingress:
+      main:
+        enabled: true
+        ingressClassName: "external"
+        annotations:
+          external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
+        hosts:
+          - host: &host "lidarr.${SECRET_DOMAIN}"
+            paths:
+              - path: /
+                pathType: Prefix
+        tls:
+          - hosts:
+              - *host
+    resources:
+      requests:
+        cpu: 10m
+        memory: 1102M
+        ephemeral-storage: "2Gi"
+      limits:
+        memory: 1428M
+        ephemeral-storage: "4Gi"
+    podAnnotations:
+      setGateway: "true"
