@@ -39,8 +39,8 @@ spec:
         containers:
           main:
             image:
-              repository: ghcr.io/bh2754/lidarr-develop
-              tag: 1.4.5.3639@sha256:db559a9aa6a00dff923f798a91111a6d76760d2bc92282ad99416c1c9350c780
+              repository: ghcr.io/bh2754/lidarr-nightly
+              tag: 1.5.0.3654@sha256:6ed533b3726452abc2952a0eb9f5a50d2a3f3a6e7c9be736bec034ec7ca2dc52
             env:
               LIDARR__INSTANCE_NAME: Lidarr
               LIDARR__PORT: &port 8686
