@@ -44,7 +44,7 @@ spec:
             env:
               LIDARR__INSTANCE_NAME: Sonarr
               LIDARR__PORT: &port 8686
-              LIDARR__AUTHENTICATION_METHOD: External
+#             LIDARR__AUTHENTICATION_METHOD: External
               LIDARR__AUTHENTICATION_REQUIRED: DisabledForLocalAddresses
               LIDARR__APPLICATION_URL: "https://lidarr.${SECRET_DOMAIN}"
               LIDARR__LOG_LEVEL: info
