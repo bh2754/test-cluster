@@ -6,4 +6,4 @@ resources:
   - ./lidarr/ks.yaml
   - ./sonarr/ks.yaml
   - ./radarr/ks.yaml
-  - ./readarr/ks.yaml
+# - ./readarr/ks.yaml
