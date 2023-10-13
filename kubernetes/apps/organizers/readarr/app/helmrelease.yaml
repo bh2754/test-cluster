@@ -25,7 +25,6 @@ spec:
     controllers:
       main:
         type: deployment
-        strategy: Recreate
         annotations:
           reloader.stakater.com/auto: "true"
 

@@ -7,10 +7,10 @@ metadata:
   labels:
     substitution.flux.home.arpa/enabled: "true"
 spec:
-  dependsOn:
-    - name: cluster-apps-onepassword-connect
-    - name: cluster-apps-pod-gateway
-    - name: cluster-rook-ceph-cluster
+# dependsOn:
+#   - name: cluster-apps-onepassword-connect
+#   - name: cluster-apps-pod-gateway
+#   - name: cluster-rook-ceph-cluster
   path: ./kubernetes/apps/organizers/readarr/app
   prune: true
   sourceRef:
