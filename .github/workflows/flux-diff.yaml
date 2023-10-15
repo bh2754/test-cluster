@@ -9,7 +9,7 @@ on:
 jobs:
   flux-diff:
     name: Flux Diff
-    runs-on: ubuntu-20230924.1.0
+    runs-on: jammy-20230916
     permissions:
       contents: read
       pull-requests: write
