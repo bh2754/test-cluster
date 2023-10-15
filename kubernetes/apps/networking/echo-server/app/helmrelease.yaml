@@ -27,62 +27,33 @@ spec:
   values:
     controllers:
       main:
-        type: deployment
-        strategy: RollingUpdate
-        annotations:
-          reloader.stakater.com/auto: "true"
         containers:
           main:
             image:
-              repository: docker.io/jmalloc/echo-server
-              tag: 0.3.5
-            probes:
-              liveness: &probes
-                enabled: true
-                custom: true
-                spec:
-                  httpGet:
-                    path: /health
-                    port: 8080
-                  initialDelaySeconds: 0
-                  periodSeconds: 10
-                  timeoutSeconds: 1
-                  failureThreshold: 3
-              readiness:
-                enabled: true
-                custom: true
-                spec:
-                  httpGet:
-                    path: /health
-                    port: 8080
-                  initialDelaySeconds: 0
-                  periodSeconds: 10
-                  timeoutSeconds: 1
-                  failureThreshold: 3
-              startup:
-                enabled: false
+              repository: ghcr.io/mendhak/http-https-echo
+              tag: 30
             resources:
               requests:
                 cpu: 5m
-                memory: 10Mi
+                memory: 30Mi
               limits:
-                memory: 50Mi
-
+                memory: 30Mi
+            env:
+              HTTP_PORT: 8080
+              LOG_WITHOUT_NEWLINE: "true"
+              LOG_IGNORE_PATH: /healthz
     service:
       main:
         ports:
           http:
             port: 8080
-
     ingress:
       main:
         enabled: true
-        ingressClassName: external
-        annotations:
-          external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
-          hajimari.io/icon: video-input-antenna
+        primary: true
+        className: nginx
         hosts:
-          - host: &host "{{ .Release.Name }}.${SECRET_DOMAIN}"
+          - host: &host echo-server.${SECRET_DOMAIN_1}
             paths:
               - path: /
                 pathType: Prefix
