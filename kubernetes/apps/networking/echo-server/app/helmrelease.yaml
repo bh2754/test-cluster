@@ -72,7 +72,7 @@ spec:
       main:
         ports:
           http:
-            port: &port 8080
+            port: 8080
 
     ingress:
       main:
@@ -85,6 +85,7 @@ spec:
           - host: &host "{{ .Release.Name }}.${SECRET_DOMAIN}"
             paths:
               - path: /
+                pathType: Prefix
                 service:
                   name: main
                   port: http
