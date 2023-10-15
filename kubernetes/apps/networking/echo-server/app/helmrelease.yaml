@@ -27,6 +27,7 @@ spec:
   values:
     controllers:
       main:
+        strategy: Recreate
         containers:
           main:
             image:
