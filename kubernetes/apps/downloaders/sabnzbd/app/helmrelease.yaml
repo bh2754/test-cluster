@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 1.5.1
+      version: 2.0.3
       sourceRef:
         kind: HelmRepository
         name: bjw-s
@@ -22,29 +22,46 @@ spec:
     remediation:
       retries: 5
   values:
-    addons:
-      netshoot:
+    controllers:
+      main:
         enabled: true
-    podAnnotations:
-      setGateway: "true"
-    image:
-      repository: ghcr.io/bh2754/sabnzbd
-      tag: 4.1.0@sha256:8b17b530153e5df26cfcab45b6b709d8699a783c8f3574e9a64ad1df40f50462
-      pullPolicy: IfNotPresent
-    env:
-      TZ: "${TZ}"
-      SABNZBD__PORT: &port 8080
-      SABNZBD__HOST_WHITELIST_ENTRIES: >-
-        sabnzbd,
-        sabnzbd.media,
-        sabnzbd.default.svc,
-        sabnzbd.default.svc.cluster,
-        sabnzbd.default.svc.cluster.local,
-        sabnzbd.${SECRET_DOMAIN}
+        type: deployment
+        annotations:
+          reloader.stakater.com/auto: "true"
+        pod:
+          annotations:
+            setGateway: "true"
+          podSecurityContext:
+            runAsUser: 568
+            runAsGroup: 568
+            fsGroup: 568
+            fsGroupChangePolicy: "OnRootMismatch"
+            supplementalGroups:
+              - 100
+        containers:
+          main:
+            image:
+              repository: ghcr.io/bh2754/sabnzbd
+              tag: 4.1.0@sha256:8b17b530153e5df26cfcab45b6b709d8699a783c8f3574e9a64ad1df40f50462
+              pullPolicy: IfNotPresent
+            env:
+              TZ: "${TZ}"
+              SABNZBD__PORT: &port 8080
+              SABNZBD__HOST_WHITELIST_ENTRIES: >-
+                sabnzbd,
+                sabnzbd.media,
+                sabnzbd.default.svc,
+                sabnzbd.default.svc.cluster,
+                sabnzbd.default.svc.cluster.local,
+                sabnzbd.${SECRET_DOMAIN}
 
-    envFrom:
-      - secretRef:
-          name: sabnzbd-secret
+            envFrom:
+              - secretRef:
+                  name: sabnzbd-secret
+            resources:
+              requests:
+                cpu: 10m
+                memory: 249M
 
     service:
       main:
@@ -90,14 +107,6 @@ spec:
           - hosts:
               - *host
 
-    podSecurityContext:
-      runAsUser: 568
-      runAsGroup: 568
-      fsGroup: 568
-      fsGroupChangePolicy: "OnRootMismatch"
-      supplementalGroups:
-        - 100
-
     persistence:
       config:
         enabled: true
@@ -114,7 +123,3 @@ spec:
         server: "${NFS_SERVER}"
         path: ${NFS_DOWNLOAD}
         mountPath: /download
-    resources:
-      requests:
-        cpu: 10m
-        memory: 249M
