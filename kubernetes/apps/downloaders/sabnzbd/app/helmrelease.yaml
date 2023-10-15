@@ -1,0 +1,120 @@
+--- #
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: &app sabnzbd
+  namespace: downloaders
+spec:
+  interval: 15m
+  chart:
+    spec:
+      chart: app-template
+      version: 1.5.1
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+  install:
+    createNamespace: true
+    remediation:
+      retries: 5
+  upgrade:
+    remediation:
+      retries: 5
+  values:
+    addons:
+      netshoot:
+        enabled: true
+    podAnnotations:
+      setGateway: "true"
+    image:
+      repository: ghcr.io/bh2754/sabnzbd
+      tag: 4.1.0@sha256:8b17b530153e5df26cfcab45b6b709d8699a783c8f3574e9a64ad1df40f50462
+      pullPolicy: IfNotPresent
+    env:
+      TZ: "${TZ}"
+      SABNZBD__PORT: &port 8080
+      SABNZBD__HOST_WHITELIST_ENTRIES: >-
+        sabnzbd,
+        sabnzbd.media,
+        sabnzbd.default.svc,
+        sabnzbd.default.svc.cluster,
+        sabnzbd.default.svc.cluster.local,
+        sabnzbd.${SECRET_DOMAIN}
+
+    envFrom:
+      - secretRef:
+          name: sabnzbd-secret
+
+    service:
+      main:
+        ports:
+          http:
+            port: *port
+
+    ingress:
+      main:
+        enabled: true
+        ingressClassName: "internal"
+        annotations:
+          external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
+#         nginx.ingress.kubernetes.io/auth-method: GET
+#         nginx.ingress.kubernetes.io/auth-url: http://authelia.security.svc.cluster.local/api/verify
+#         nginx.ingress.kubernetes.io/auth-signin: https://auth.bharris.vip?rm=$request_method
+#         nginx.ingress.kubernetes.io/auth-response-headers: Remote-User,Remote-Name,Remote-Groups,Remote-Email
+#         nginx.ingress.kubernetes.io/auth-snippet: proxy_set_header X-Forwarded-Method $request_method;
+#         nginx.ingress.kubernetes.io/configuration-snippet: |-
+#           proxy_set_header Accept-Encoding "";
+#           sub_filter '</head>' '<link rel="stylesheet" type="text/css" href="https://theme-park.${SECRET_DOMAIN}/css/base/sabnzbd/hotline.css"></head>';
+#           sub_filter_once on;
+#         theme: "hotline"
+        hosts:
+          - host: &host "{{ .Release.Name }}.${SECRET_DOMAIN}"
+            paths:
+              - path: /
+                pathType: Prefix
+        tls:
+          - hosts:
+              - *host
+      api:
+        enabled: true
+        ingressClassName: "internal"
+        annotations:
+          nginx.ingress.kubernetes.io/whitelist-source-range: 10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+        hosts:
+          - host: *host
+            paths:
+              - path: /api
+                pathType: Prefix
+        tls:
+          - hosts:
+              - *host
+
+    podSecurityContext:
+      runAsUser: 568
+      runAsGroup: 568
+      fsGroup: 568
+      fsGroupChangePolicy: "OnRootMismatch"
+      supplementalGroups:
+        - 100
+
+    persistence:
+      config:
+        enabled: true
+        existingClaim: sabnzbd-config-v1
+      media:
+        enabled: true
+        type: nfs
+        server: "${NFS_SERVER}"
+        path: ${NFS_MEDIA}
+        mountPath: /media
+      download:
+        enabled: true
+        type: nfs
+        server: "${NFS_SERVER}"
+        path: ${NFS_DOWNLOAD}
+        mountPath: /download
+    resources:
+      requests:
+        cpu: 10m
+        memory: 249M
