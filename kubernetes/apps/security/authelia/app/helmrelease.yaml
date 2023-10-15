@@ -9,43 +9,47 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 1.5.1
+      version: 2.0.3
       interval: 30m
       sourceRef:
         kind: HelmRepository
         name: bjw-s
         namespace: flux-system
   values:
-    initContainers:
-      init-db:
-        image: ghcr.io/bh2754/postgres-initdb:14.9
-        envFrom:
-          - secretRef:
-              name: authelia-secret
-
-    controller:
-      replicas: 3
-      strategy: RollingUpdate
-
-    podSecurityContext:
-      runAsUser: 568
-      runAsGroup: 568
-      fsGroup: 568
-      fsGroupChangePolicy: "OnRootMismatch"
-
-    podAnnotations:
-      configmap.reloader.stakater.com/reload: authelia
-      secret.reloader.stakater.com/reload: authelia-secret
-
-    image:
-      repository: ghcr.io/authelia/authelia
-      tag: 4.37.5
-
-    enableServiceLinks: false
-
-    envFrom:
-      - secretRef:
-          name: authelia-secret
+    controllers:
+      main:
+        type: deployment
+        replicas: 3
+        strategy: RollingUpdate
+        annotations:
+          reloader.stakater.com/auto: "true"
+        pod:
+          securityContext:
+            runAsUser: 568
+            runAsGroup: 568
+            fsGroup: 568
+            fsGroupChangePolicy: "OnRootMismatch"
+        initContainers:
+          01-init-db:
+            image: ghcr.io/onedr0p/postgres-init:14.8
+            imagePullPolicy: IfNotPresent
+            envFrom: &envFrom
+              - secretRef:
+                  name: authelia-secret
+        containers:
+          main:
+            image:
+              repository: ghcr.io/authelia/authelia
+              tag: 4.37.5
+            envFrom:
+              - secretRef:
+                  name: authelia-secret
+            resources:
+              requests:
+                cpu: 10m
+                memory: 50Mi
+              limits:
+                memory: 250Mi
 
     service:
       main:
@@ -59,9 +63,7 @@ spec:
         ingressClassName: "external"
         annotations:
           external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
-#         cert-manager.io/cluster-issuer: "letsencrypt-production"
-#         external-dns.home.arpa/enabled: "true"
-#         external-dns/is-public: "true"
+
         hosts:
           - host: &host "auth.${SECRET_DOMAIN}"
             paths:
@@ -70,7 +72,7 @@ spec:
         tls:
           - hosts:
               - *host
-#           secretName: "authelia-tls"
+
     persistence:
       config:
         enabled: true
@@ -80,17 +82,3 @@ spec:
         mountPath: /config/configuration.yml
         readOnly: false
 
-    resources:
-      requests:
-        cpu: 10m
-        memory: 50Mi
-      limits:
-        memory: 250Mi
-
-    topologySpreadConstraints:
-      - maxSkew: 2
-        topologyKey: kubernetes.io/hostname
-        whenUnsatisfiable: DoNotSchedule
-        labelSelector:
-          matchLabels:
-            app.kubernetes.io/name: authelia
