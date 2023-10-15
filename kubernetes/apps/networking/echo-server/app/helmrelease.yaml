@@ -27,6 +27,7 @@ spec:
   values:
     controllers:
       main:
+        type: deployment
         strategy: RollingUpdate
         annotations:
           reloader.stakater.com/auto: "true"
@@ -47,7 +48,17 @@ spec:
                   periodSeconds: 10
                   timeoutSeconds: 1
                   failureThreshold: 3
-              readiness: *probes
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /health
+                    port: 8080
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
               startup:
                 enabled: false
             resources:
