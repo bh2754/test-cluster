@@ -24,20 +24,8 @@ spec:
   values:
     controllers:
       main:
-        enabled: true
-        type: deployment
         annotations:
           reloader.stakater.com/auto: "true"
-        pod:
-          annotations:
-            setGateway: "true"
-          podSecurityContext:
-            runAsUser: 568
-            runAsGroup: 100
-            fsGroup: 100
-            fsGroupChangePolicy: "OnRootMismatch"
-            supplementalGroups:
-              - 100
         containers:
           main:
             image:
@@ -58,10 +46,31 @@ spec:
             envFrom:
               - secretRef:
                   name: sabnzbd-secret
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /api?mode=version
+                    port: *port
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probes
+              startup:
+                enabled: false
             resources:
               requests:
                 cpu: 10m
                 memory: 249M
+        pod:
+          securityContext:
+            runAsUser: 568
+            runAsGroup: 568
+            fsGroup: 568
+            fsGroupChangePolicy: OnRootMismatch
 
     service:
       main:
@@ -72,7 +81,7 @@ spec:
     ingress:
       main:
         enabled: true
-        ingressClassName: "internal"
+        className: "internal"
         annotations:
           external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
 #         nginx.ingress.kubernetes.io/auth-method: GET
@@ -89,7 +98,9 @@ spec:
           - host: &host "{{ .Release.Name }}.${SECRET_DOMAIN}"
             paths:
               - path: /
-                pathType: Prefix
+                service:
+                  name: main
+                  port: http
         tls:
           - hosts:
               - *host
