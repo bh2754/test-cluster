@@ -25,7 +25,7 @@ spec:
   uninstall:
     keepHistory: false
   values:
-    controller:
+    controllers:
       main:
         strategy: RollingUpdate
         annotations:
@@ -80,9 +80,3 @@ spec:
         tls:
           - hosts:
               - *host
-    resources:
-      requests:
-        cpu: 5m
-        memory: 10Mi
-      limits:
-        memory: 50Mi
