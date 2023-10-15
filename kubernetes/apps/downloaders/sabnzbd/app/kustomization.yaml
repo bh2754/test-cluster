@@ -5,8 +5,8 @@ resources:
   - ./externalsecret.yaml
   - ./config-pvc.yaml
   - ./helmrelease.yaml
-  - ./gatus.yaml
-  - ./volsync.yaml
+# - ./gatus.yaml
+# - ./volsync.yaml
 commonLabels:
   app.kubernetes.io/name: sabnzbd
   app.kubernetes.io/instance: sabnzbd
