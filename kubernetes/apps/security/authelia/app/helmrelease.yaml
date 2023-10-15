@@ -32,7 +32,7 @@ spec:
         initContainers:
           01-init-db:
             image:
-              repository: gchr.io/bh2754/postgres-initdb
+              repository: ghcr.io/bh2754/postgres-initdb
               tag: 14.9
               imagePullPolicy: IfNotPresent
               envFrom: &envFrom
