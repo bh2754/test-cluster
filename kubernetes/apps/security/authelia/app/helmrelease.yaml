@@ -65,7 +65,7 @@ spec:
               AUTHELIA_AUTHENTICATION_BACKEND_LDAP_USER: CN=Administrator,CN=Users,DC=bharris,DC=co
               AUTHELIA_AUTHENTICATION_BACKEND_LDAP_USERNAME_ATTRIBUTE: sAMAccountName
               AUTHELIA_AUTHENTICATION_BACKEND_LDAP_USERS_FILTER: "(&(|({username_attribute}={input})({mail_attribute}={input}))(objectCategory=person)(objectClass=user)(!userAccountControl:1.2.840.113556.1.4.803:=2)(!pwdLastSet=0))"
-              AUTHELIA_AUTHENTICATION_BACKEND_PASSWORD_RESET_DISABLE: "false:
+              AUTHELIA_AUTHENTICATION_BACKEND_PASSWORD_RESET_DISABLE: "false"
               AUTHELIA_AUTHENTICATION_BACKEND_REFRESH_INTERVAL: 1m
               AUTHELIA_DEFAULT_REDIRECTION_URL: https://auth.${SECRET_DOMAIN}
               AUTHELIA_DUO_API_DISABLE: "true"
