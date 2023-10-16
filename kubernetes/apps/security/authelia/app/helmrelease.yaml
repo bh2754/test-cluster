@@ -9,72 +9,43 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 2.0.3
+      version: 1.5.1
       interval: 30m
       sourceRef:
         kind: HelmRepository
         name: bjw-s
         namespace: flux-system
   values:
-    controllers:
-      main:
-        type: deployment
-        replicas: 3
-        strategy: RollingUpdate
-        annotations:
-          reloader.stakater.com/auto: "true"
-        pod:
-          securityContext:
-            runAsUser: 568
-            runAsGroup: 568
-            fsGroup: 568
-            fsGroupChangePolicy: "OnRootMismatch"
-        containers:
-          main:
-            image:
-              repository: ghcr.io/authelia/authelia
-              tag: 4.37.5
-            env:
-              AUTHELIA_AUTHENTICATION_BACKEND_LDAP_BASE_DN: dc=bharris,dc=co
-              AUTHELIA_AUTHENTICATION_BACKEND_LDAP_DISPLAY_NAME_ATTRIBUTE: givenName
-              AUTHELIA_AUTHENTICATION_BACKEND_LDAP_GROUPS_FILTER: "(&(member:1.2.840.113556.1.4.1941:={dn})(objectClass=group)(objectCategory=group))"
-              AUTHELIA_AUTHENTICATION_BACKEND_LDAP_GROUP_NAME_ATTRIBUTE: cn
-              AUTHELIA_AUTHENTICATION_BACKEND_LDAP_IMPLEMENTATION: activedirectory
-              AUTHELIA_AUTHENTICATION_BACKEND_LDAP_MAIL_ATTRIBUTE: mail
-              AUTHELIA_AUTHENTICATION_BACKEND_LDAP_START_TLS: "false"
-              AUTHELIA_AUTHENTICATION_BACKEND_LDAP_URL: "ldap://10.0.103.10:389"
-              AUTHELIA_AUTHENTICATION_BACKEND_LDAP_USER: CN=Administrator,CN=Users,DC=bharris,DC=co
-              AUTHELIA_AUTHENTICATION_BACKEND_LDAP_USERNAME_ATTRIBUTE: sAMAccountName
-              AUTHELIA_AUTHENTICATION_BACKEND_LDAP_USERS_FILTER: "(&(|({username_attribute}={input})({mail_attribute}={input}))(objectCategory=person)(objectClass=user)(!userAccountControl:1.2.840.113556.1.4.803:=2)(!pwdLastSet=0))"
-              AUTHELIA_AUTHENTICATION_BACKEND_PASSWORD_RESET_DISABLE: "false"
-              AUTHELIA_AUTHENTICATION_BACKEND_REFRESH_INTERVAL: 1m
-              AUTHELIA_DEFAULT_REDIRECTION_URL: https://auth.${SECRET_DOMAIN}
-              AUTHELIA_DUO_API_DISABLE: "true"
-              AUTHELIA_LOG_LEVEL: debug
-              AUTHELIA_NOTIFIER_SMTP_DISABLE_REQUIRE_TLS: "true"
-              AUTHELIA_NOTIFIER_SMTP_HOST: smntp.gmail.com
-              AUTHELIA_NOTIFIER_SMTP_PORT: 587
-              AUTHELIA_NOTIFIER_SMTP_SENDER: ${AUTHELIA_SENDER}
-              AUTHELIA_NOTIFIER_SMTP_USERNAME: bh2754@gmail.com
-              AUTHELIA_SERVER_DISABLE_HEALTHCHECK: "true"
-              AUTHELIA_SERVER_PORT: &port 80
-              AUTHELIA_SESSION_DOMAIN: ${SECRET_DOMAIN}
-              AUTHELIA_SESSION_REDIS_DATABASE_INDEX: 14
-              AUTHELIA_SESSION_REDIS_HOST: redis.database.svc.cluster.local
-              AUTHELIA_TELEMETRY_METRICS_ADDRESS: tcp://0.0.0.0:8080
-              AUTHELIA_TELEMETRY_METRICS_ENABLED: "true"
-              AUTHELIA_THEME: dark
-              AUTHELIA_TOTP_ISSUER: authelia.com
-              AUTHELIA_WEBAUTHN_DISABLE: "true"
-            envFrom:
-              - secretRef:
-                  name: authelia-secret
-            resources:
-              requests:
-                cpu: 10m
-                memory: 50Mi
-              limits:
-                memory: 250Mi
+    initContainers:
+      init-db:
+        image: ghcr.io/bh2754/postgres-initdb:14.9
+        envFrom:
+          - secretRef:
+              name: authelia-secret
+
+    controller:
+      replicas: 3
+      strategy: RollingUpdate
+
+    podSecurityContext:
+      runAsUser: 568
+      runAsGroup: 568
+      fsGroup: 568
+      fsGroupChangePolicy: "OnRootMismatch"
+
+    podAnnotations:
+      configmap.reloader.stakater.com/reload: authelia
+      secret.reloader.stakater.com/reload: authelia-secret
+
+    image:
+      repository: ghcr.io/authelia/authelia
+      tag: 4.37.5
+
+    enableServiceLinks: false
+
+    envFrom:
+      - secretRef:
+          name: authelia-secret
 
     service:
       main:
@@ -88,18 +59,18 @@ spec:
         ingressClassName: "external"
         annotations:
           external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
-
+#         cert-manager.io/cluster-issuer: "letsencrypt-production"
+#         external-dns.home.arpa/enabled: "true"
+#         external-dns/is-public: "true"
         hosts:
           - host: &host "auth.${SECRET_DOMAIN}"
             paths:
               - path: /
-                service:
-                  name: main
-                  port: http
+                pathType: Prefix
         tls:
           - hosts:
               - *host
-
+#           secretName: "authelia-tls"
     persistence:
       config:
         enabled: true
@@ -109,3 +80,17 @@ spec:
         mountPath: /config/configuration.yml
         readOnly: false
 
+    resources:
+      requests:
+        cpu: 10m
+        memory: 50Mi
+      limits:
+        memory: 250Mi
+
+    topologySpreadConstraints:
+      - maxSkew: 2
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: authelia
