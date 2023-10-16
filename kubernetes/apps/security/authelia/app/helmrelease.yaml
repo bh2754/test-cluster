@@ -29,15 +29,6 @@ spec:
             runAsGroup: 568
             fsGroup: 568
             fsGroupChangePolicy: "OnRootMismatch"
-        initContainers:
-          01-init-db:
-            image:
-              repository: ghcr.io/bh2754/postgres-initdb
-              tag: 14.9
-              imagePullPolicy: IfNotPresent
-              envFrom:
-                - secretRef:
-                    name: authelia-secret
         containers:
           main:
             image:
