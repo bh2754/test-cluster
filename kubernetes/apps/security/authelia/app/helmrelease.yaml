@@ -35,16 +35,6 @@ spec:
               repository: ghcr.io/bh2754/postgres-initdb
               tag: 14.9
               imagePullPolicy: IfNotPresent
-              env:
-                - name: POSTGRES_HOST
-                  value: postgres-rw.databases.svc
-                - name: POSTGRES_DB
-                  value: authelia
-                - name: POSTGRES_SUPER_PASS
-                  valueFrom:
-                    secretKeyRef:
-                      name: postgres-superuser
-                      key: password
               envFrom:
                 - secretRef:
                     name: authelia-secret
