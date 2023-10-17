@@ -22,7 +22,7 @@ spec:
     remediation:
       retries: 5
   values:
-    controller:
+    controllers:
       main:
         replicas: 3
         strategy: RollingUpdate
