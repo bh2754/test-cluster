@@ -39,7 +39,9 @@ spec:
                     app.kubernetes.io/name: authelia
         initContainers:
           01-init-db:
-            image: ghcr.io/bh2754/postgres-initdb:14.9
+            image: 
+              repository: ghcr.io/bh2754/postgres-initdb
+              tag: 14.0
             env:
               - name: POSTGRES_HOST
                 value: postgres-rw.databases.svc.cluster.local
