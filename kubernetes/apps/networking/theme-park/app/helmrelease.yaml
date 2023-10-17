@@ -26,25 +26,25 @@ spec:
       main:
         replicas: 3
         strategy: RollingUpdate
+        pod:
+          topologySpreadConstraints:
+            - maxSkew: 1
+              topologyKey: kubernetes.io/hostname
+              whenUnsatisfiable: DoNotSchedule
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: *app
         containers:
           main:
             image:
               repository: ghcr.io/bh2754/theme-park
               tag: 1.13.11@sha256:f1c7ccf1417c21e7001bc71f685edf96ae320bcc7b5bb4bc8443c4ac9c018949
-            pod:
-              topologySpreadConstraints:
-                - maxSkew: 1
-                  topologyKey: kubernetes.io/hostname
-                  whenUnsatisfiable: DoNotSchedule
-                  labelSelector:
-                    matchLabels:
-                      app.kubernetes.io/name: *app
-              resources:
-                requests:
-                  cpu: 5m
-                  memory: 10Mi
-                limits:
-          #       memory: 50Mi
+            resources:
+              requests:
+                cpu: 5m
+                memory: 10Mi
+              limits:
+        #       memory: 50Mi
     service:
       main:
         ports:
