@@ -1,0 +1,68 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: stash-config-v1
+  namespace: media
+  labels:
+    app.kubernetes.io/name: &name stash-config
+    app.kubernetes.io/instance: *name
+  # snapshot.home.arpa/enabled: "true"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: ceph-block
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: stash-generated-v1
+  namespace: media
+  labels:
+    app.kubernetes.io/name: &name stash-generated
+    app.kubernetes.io/instance: *name
+  # snapshot.home.arpa/enabled: "true"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: ceph-block
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: stash-metadata-v1
+  namespace: media
+  labels:
+    app.kubernetes.io/name: &name stash-metadata
+    app.kubernetes.io/instance: *name
+  # snapshot.home.arpa/enabled: "true"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: ceph-block
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: stash-cache-v1
+  namespace: media
+  labels:
+    app.kubernetes.io/name: &name stash-cache
+    app.kubernetes.io/instance: *name
+  # snapshot.home.arpa/enabled: "true"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: ceph-block

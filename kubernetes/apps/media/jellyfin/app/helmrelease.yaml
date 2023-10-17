@@ -1,0 +1,80 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: jellyfin
+  namespace: media
+spec:
+  chart:
+    spec:
+      chart: app-template
+      version: 1.5.1
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+  interval: 30m
+  values:
+    image:
+      repository: ghcr.io/bh2754/jellyfin
+      tag: 10.8.11@sha256:1dd1b6934104b53cd2a42d2ff001c256dabba6a782f18798a854d893c14c3b46
+
+    podSecurityContext:
+      runAsUser: 568
+      runAsGroup: 568
+      fsGroup: 568
+      fsGroupChangePolicy: "OnRootMismatch"
+      supplementalGroups:
+        - 44
+        - 109
+        - 65539
+
+    env:
+      DOTNET_SYSTEM_IO_DISABLEFILELOCKING: "true"
+
+    service:
+      main:
+        type: LoadBalancer
+        externalTrafficPolicy: Local
+        loadBalancerIP: "${METTALB_JELLYFIN}"
+        ports:
+          http:
+            port: 8096
+
+    ingress:
+      main:
+        enabled: true
+        ingressClassName: internal
+        annotations:
+          nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+          cert-manager.io/cluster-issuer: "letsencrypt-production"
+        hosts:
+          - host: &host jellyfin.${SECRET_DOMAIN}
+            paths:
+              - path: /
+                pathType: Prefix
+        tls:
+          - hosts:
+              - *host
+
+    persistence:
+      config:
+        enabled: true
+        existingClaim: jellyfin-config
+      nfs-nas-media:
+        enabled: true
+        mountPath: /storage/media
+        path: /volume1/Media
+        server: ${NFS_SERVER}
+        type: nfs
+      transcode:
+        enabled: true
+        type: emptyDir
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 1471M
+      limits:
+        memory: 12G
