@@ -24,19 +24,6 @@ spec:
         annotations:
           configmap.reloader.stakater.com/reload: authelia
           secret.reloader.stakater.com/reload: authelia-secret
-        pod:
-          securityContect:
-            runAsUser: 568
-            runAsGroup: 568
-            fsGroup: 568
-            fsGroupChangePolicy: "OnRootMismatch"
-            topologySpreadConstraints:
-              - maxSkew: 2
-                topologyKey: kubernetes.io/hostname
-                whenUnsatisfiable: DoNotSchedule
-                labelSelector:
-                  matchLabels:
-                    app.kubernetes.io/name: authelia
         initContainers:
           01-init-db:
             image: 
@@ -108,6 +95,20 @@ spec:
             envFrom:
               - secretRef:
                   name: authelia-secret
+            pod:
+              enableServiceLinks: false
+              securityContect:
+                runAsUser: 568
+                runAsGroup: 568
+                fsGroup: 568
+                fsGroupChangePolicy: "OnRootMismatch"
+              topologySpreadConstraints:
+                - maxSkew: 2
+                  topologyKey: kubernetes.io/hostname
+                  whenUnsatisfiable: DoNotSchedule
+                  labelSelector:
+                    matchLabels:
+                      app.kubernetes.io/name: authelia
 
     service:
       main:
@@ -125,13 +126,12 @@ spec:
           - host: &host "auth.${SECRET_DOMAIN}"
             paths:
               - path: /
-                pathType: Prefix
+                service:
+                  name: main
+                  port: http
         tls:
           - hosts:
               - *host
-            service:
-              name: main
-              port: http
     persistence:
       config:
         enabled: true
