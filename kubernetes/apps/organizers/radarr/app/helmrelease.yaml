@@ -40,7 +40,7 @@ spec:
           main:
             image:
               repository: ghcr.io/bh2754/radarr-develop
-              tag: 5.0.3.8127@sha256:81c1b2b2d595372957eb21da96e7b882d7cd7edc8a603fcf2688295244f8d748
+              tag: 5.1.2.8207@sha256:568c64face9148f8838eacb3a010c0bd26af97362880895b0a2e8e0c62af31d6
             env:
               SONARR__INSTANCE_NAME: Radarr
               SONARR__PORT: &port 7878
