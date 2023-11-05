@@ -44,9 +44,9 @@ spec:
             env:
               READARR__INSTANCE_NAME: Readarr
               READARR__PORT: &port 80
-#             READARR__AUTHENTICATION_METHOD: External
-#             READARR__AUTHENTICATION_REQUIRED: DisabledForLocalAddresses
-#             READARR__APPLICATION_URL: "https://readarr.${SECRET_DOMAIN}"
+              READARR__AUTHENTICATION_METHOD: External
+              READARR__AUTHENTICATION_REQUIRED: DisabledForLocalAddresses
+              READARR__APPLICATION_URL: "https://readarr.${SECRET_DOMAIN}"
               READARR__LOG_LEVEL: info
             envFrom:
               - secretRef:
