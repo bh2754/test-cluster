@@ -33,7 +33,7 @@ spec:
         maxParallel: 8
       destinationPath: s3://postg/
       endpointURL: http://minio.bharris.co:9001
-      serverName: &currentCluster postgres-v2
+      serverName: &currentCluster postgres-v1
       s3Credentials:
         accessKeyId:
           name: postgres-minio
